@@ -100,6 +100,11 @@ app.get('/api/productos', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.json({ status: 'API de Odoo funcionando correctamente 🚀', endpoint: '/api/productos' });
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor API JSON-RPC corriendo en http://localhost:${PORT}/api/productos`);
 });
