@@ -91,7 +91,12 @@ app.get('/api/productos', async (req, res) => {
             throw new Error(`Error en consulta: ${dataJson.error.data?.message || dataJson.error.message}`);
         }
 
-        res.json(dataJson.result);
+        const productosConImagen = dataJson.result.map(producto => ({
+            ...producto,
+            image_url: `${ODOO_URL}/web/image/product.template/${producto.id}/image_512`
+        }));
+
+        res.json(productosConImagen);
 
     } catch (error) {
         console.error('Error en el servidor API:', error.message);
