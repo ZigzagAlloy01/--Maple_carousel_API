@@ -80,7 +80,7 @@ app.get('/api/productos', async (req, res) => {
                         ]],
                         {
                             fields: [
-                                "id", "name", "default_code", "website_url", 
+                                "id", "name", "default_code", "description_purchase", "website_url", 
                                 "description_sale", "list_price", "currency_id", 
                                 "image_512"
                             ],
