@@ -135,6 +135,24 @@ const MONITORING_SERVICES = [
     "4298"
 ]
 
+const ALARM_DOT_COM_PACKAGES = [
+    "IQP4005",
+    "IQNS PACK",
+    "IQ4HUB PACK",
+    "DHI-KTH01",
+    "ADC-V730",
+    "ADC-V516",
+    "ADC-VC827P-MX",
+    "ADC-AC-ET25-1",
+    "ADC-VDB780B-MX",
+    "MX89999",
+    "MX89612",
+    "TH6320ZW2003",
+    "14315",
+    "MH54A",
+    "46564"
+]
+
 app.get('/api/productos', async (req, res) => {
     try {
         const authResponse = await fetch(`${ODOO_URL}/jsonrpc`, {
@@ -374,10 +392,90 @@ app.get('/api/serviciosdesuscripcion', async (req, res) => {
     }
 });
 
+app.get('/api/alarmdotcompaquetes', async (req, res) => {
+    try {
+        const authResponse = await fetch(`${ODOO_URL}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {
+                    service: "common",
+                    method: "authenticate",
+                    args: [DB, USERNAME, PASSWORD, {}]
+                },
+                id: 1
+            })
+        });
+
+        const authData = await authResponse.json();
+
+        if (authData.error) {
+            throw new Error(`Odoo Error: ${authData.error.data?.message || authData.error.message}`);
+        }
+
+        const uid = authData.result;
+        if (!uid) {
+            return res.status(401).json({ error: "Autenticación fallida. Verifica que el nombre de tu base de datos en la variable DB sea exacto." });
+        }
+
+        const dataResponse = await fetch(`${ODOO_URL}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {
+                    service: "object",
+                    method: "execute_kw",
+                    args: [
+                        DB,
+                        uid,
+                        PASSWORD,
+                        'product.template',
+                        'search_read',
+                        [[
+                            ['default_code', 'in', ALARM_DOT_COM_PACKAGES],
+                            ['website_published', '=', true]
+                        ]],
+                        {
+                            fields: [
+                                "id", "name", "default_code", "description_purchase", "website_url", 
+                                "description_sale", "list_price", "currency_id", 
+                                "image_512"
+                            ],
+                            context: { bin_size: true }
+                        }
+                    ]
+                },
+                id: 2
+            })
+        });
+
+        const dataJson = await dataResponse.json();
+
+        if (dataJson.error) {
+            throw new Error(`Error en consulta: ${dataJson.error.data?.message || dataJson.error.message}`);
+        }
+
+        const productosConImagen = dataJson.result.map(producto => ({
+            ...producto,
+            image_url: `${ODOO_URL}/web/image/product.template/${producto.id}/image_512`
+        }));
+
+        res.json(productosConImagen);
+
+    } catch (error) {
+        console.error('Error en el servidor API:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion' });
+    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes' });
 });
 
 app.listen(PORT, () => {
