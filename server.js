@@ -486,7 +486,7 @@ app.get('/api/categoryreferencetree', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes & /api/categoryreferencetree' });
+    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes & /api/categoryreferencetree'});
 });
 
 app.listen(PORT, () => {
