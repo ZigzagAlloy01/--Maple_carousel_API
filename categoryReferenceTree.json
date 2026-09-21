@@ -849,25 +849,5 @@
         ]
       }
     ]
-  },
-  {
-    "categoryId": "894",
-    "title": "Videovigilancia",
-    "url": "/shop/category/videovigilancia-894",
-    "children": [
-      {
-        "categoryId": "904",
-        "title": "Accesorios Generales",
-        "url": "/shop/category/videovigilancia-accesorios-generales-904",
-        "children": [
-          {
-            "categoryId": "905",
-            "title": "Kits Extensores, Convertidores , Divisores, HDMI, VGA, DVI",
-            "url": "/shop/category/videovigilancia-accesorios-generales-kits-extensores-convertidores-divisores-hdmi-vga-dvi-905",
-            "children": []
-          }
-        ]
-      }
-    ]
   }
 ]
