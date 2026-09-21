@@ -133,7 +133,7 @@ const MONITORING_SERVICES = [
     "4290",
     "4294",
     "4298"
-]
+];
 
 const ALARM_DOT_COM_PACKAGES = [
     "IQP4005",
@@ -151,7 +151,9 @@ const ALARM_DOT_COM_PACKAGES = [
     "14315",
     "MH54A",
     "46564"
-]
+];
+
+const categoryReferenceTree = require('./categoryReferenceTree.json');
 
 app.get('/api/productos', async (req, res) => {
     try {
@@ -472,10 +474,19 @@ app.get('/api/alarmdotcompaquetes', async (req, res) => {
     }
 });
 
+app.get('/api/categoryreferencetree', async (req, res) => {
+    try {
+        res.json(categoryReferenceTree);
+    } catch (error) {
+        console.error('Error en el servidor API:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes' });
+    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes & /api/categoryreferencetree' });
 });
 
 app.listen(PORT, () => {
