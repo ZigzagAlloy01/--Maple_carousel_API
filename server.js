@@ -10,6 +10,28 @@ const DB = process.env.DB;
 const USERNAME = "sistemas@storemaple.com";
 const PASSWORD = process.env.PASSWORD;
 
+const MAIN_CAROUSEL_CODES = [
+  "IQ4HUB POWER MANAGE PACK",
+  "AE-DC2018-D1(WP)",
+  "AE-DC5013-F6",
+  "AXPROKIT",
+  "CSH8C/3MP",
+  "DS-2CFSP4/4G/LA",
+  "DS-2CV2021G2-IDW(W)",
+  "DSK1T320MFWXB/S/DEMO",
+  "DS-K1T502DBWX-CQR",
+  "AXHOME-KIT-WIFI",
+  "DS-K1T8003EF",
+  "DS-K1T805MBFWX",
+  "DS-KIS203-T",
+  "DS-KV6133-ME1",
+  "1046832",
+  "ML100",
+  "SCAM3DB",
+  "TAPOC100",
+  "WL01"
+];
+
 const FEATURED_CODES = [
     "DS-PD201PC10-WB",
     "DS-PA201P-16WB",
@@ -154,6 +176,86 @@ const ALARM_DOT_COM_PACKAGES = [
 ];
 
 const categoryReferenceTree = require('./categoryReferenceTree.json');
+
+app.get('/api/carruselprincipal', async (req, res) => {
+    try {
+        const authResponse = await fetch(`${ODOO_URL}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {
+                    service: "common",
+                    method: "authenticate",
+                    args: [DB, USERNAME, PASSWORD, {}]
+                },
+                id: 1
+            })
+        });
+
+        const authData = await authResponse.json();
+
+        if (authData.error) {
+            throw new Error(`Odoo Error: ${authData.error.data?.message || authData.error.message}`);
+        }
+
+        const uid = authData.result;
+        if (!uid) {
+            return res.status(401).json({ error: "Autenticación fallida. Verifica que el nombre de tu base de datos en la variable DB sea exacto." });
+        }
+
+        const dataResponse = await fetch(`${ODOO_URL}/jsonrpc`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {
+                    service: "object",
+                    method: "execute_kw",
+                    args: [
+                        DB,
+                        uid,
+                        PASSWORD,
+                        'product.template',
+                        'search_read',
+                        [[
+                            ['default_code', 'in', MAIN_CAROUSEL_CODES],
+                            ['website_published', '=', true]
+                        ]],
+                        {
+                            fields: [
+                                "id", "name", "default_code", "description_purchase", "website_url", 
+                                "description_sale", "list_price", "currency_id", 
+                                "image_512"
+                            ],
+                            context: { bin_size: true }
+                        }
+                    ]
+                },
+                id: 2
+            })
+        });
+
+        const dataJson = await dataResponse.json();
+
+        if (dataJson.error) {
+            throw new Error(`Error en consulta: ${dataJson.error.data?.message || dataJson.error.message}`);
+        }
+
+        const productosConImagen = dataJson.result.map(producto => ({
+            ...producto,
+            image_url: `${ODOO_URL}/web/image/product.template/${producto.id}/image_512`
+        }));
+
+        res.json(productosConImagen);
+
+    } catch (error) {
+        console.error('Error en el servidor API:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 app.get('/api/productos', async (req, res) => {
     try {
@@ -486,7 +588,7 @@ app.get('/api/categoryreferencetree', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
-    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes & /api/categoryreferencetree'});
+    res.json({ status: 'La API de Maple Alarm Systems está funcionando correctamente', endpoint: '/api/carruselprincipal & /api/productos & /api/productoshagaloustedmismo & /api/serviciosdesuscripcion & /api/alarmdotcompaquetes & /api/categoryreferencetree'});
 });
 
 app.listen(PORT, () => {
